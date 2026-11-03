@@ -704,7 +704,7 @@ function buildHeadphones(){
 
   /* ---- shared cup geometry ---- */
   const shellGeo = superellipsoid(D.halfD, D.halfH, D.halfT, 2.72, 2.34, 140, 64, 9);
-  const baffleGeo = superellipsoid(0.30, 0.395, 0.05, 2.2, 2.34, 56, 22);
+  const baffleGeo = superellipsoid(0.38, 0.50, 0.05, 2.2, 2.34, 56, 22);
   const padGeo = cushionRing(0.545, 0.395, 0.235, 0.185, 160, 40);
   // cushionRing builds its axis along X; the cup axis is Z — align them so the
   // cushion faces the head (inboard), not the camera
@@ -744,7 +744,7 @@ function buildHeadphones(){
 
     // dark baffle plate deep inside the cup, seen through the cushion opening
     const baffle = new THREE.Mesh(baffleGeo, mats.grille);
-    baffle.position.set(0, -0.95, -0.16);
+    baffle.position.set(0, -0.95, -0.30);
     baffle.castShadow = true;
     cup.add(baffle);
 
