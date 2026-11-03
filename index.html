@@ -373,7 +373,7 @@ import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.j
 const PALETTE = {
   midnight: {
     label: 'Midnight', swatch: '#3e444b',
-    shell: 0x545b62, cushion: 0x3a4047, canopy: 0x32373e, grille: 0x1e2024
+    shell: 0x545b62, cushion: 0x474e56, canopy: 0x454b54, grille: 0x141619
   },
   starlight: {
     label: 'Starlight', swatch: '#eee6d9',
@@ -616,11 +616,11 @@ function buildHeadphones(){
   const mats = {};
 
   const knit = makeKnitTexture();
-  const knitCanopy = knit.clone(); knitCanopy.needsUpdate = true; knitCanopy.repeat.set(4.2, 1.2);
-  const knitCanopyMap = makeKnitTexture(512, true); knitCanopyMap.repeat.set(4.2, 1.2);
+  const knitCanopy = knit.clone(); knitCanopy.needsUpdate = true; knitCanopy.repeat.set(6.5, 1.7);
+  const knitCanopyMap = makeKnitTexture(512, true); knitCanopyMap.repeat.set(6.5, 1.7);
   knitCanopyMap.colorSpace = THREE.SRGBColorSpace;
-  const knitCushion = knit.clone(); knitCushion.needsUpdate = true; knitCushion.repeat.set(3.6, 1.3);
-  const knitCushionMap = makeKnitTexture(512, true); knitCushionMap.repeat.set(3.6, 1.3);
+  const knitCushion = knit.clone(); knitCushion.needsUpdate = true; knitCushion.repeat.set(5, 2.5);
+  const knitCushionMap = makeKnitTexture(512, true); knitCushionMap.repeat.set(5, 2.5);
   knitCushionMap.colorSpace = THREE.SRGBColorSpace;
   const rib = makeRibTexture();
   const noiseMap = makeNoiseTexture(256);
@@ -641,13 +641,13 @@ function buildHeadphones(){
     color: PALETTE[currentColor].canopy,
     metalness: 0.0, roughness: 0.84,
     sheen: 0.16, sheenRoughness: 0.62, sheenColor: new THREE.Color(0x8e96a0),
-    map: knitCanopyMap, bumpMap: knitCanopy, bumpScale: 0.45, envMapIntensity: 0.72
+    map: knitCanopyMap, bumpMap: knitCanopy, bumpScale: 0.45, envMapIntensity: 1.05
   });
   mats.cushion = new THREE.MeshPhysicalMaterial({
     color: PALETTE[currentColor].cushion,
     metalness: 0.0, roughness: 0.94,
     sheen: 0.15, sheenRoughness: 0.68, sheenColor: new THREE.Color(0x8e96a0),
-    map: knitCushionMap, bumpMap: knitCushion, bumpScale: 0.40, envMapIntensity: 0.60
+    map: knitCushionMap, bumpMap: knitCushion, bumpScale: 0.40, envMapIntensity: 0.95
   });
   mats.grille = new THREE.MeshPhysicalMaterial({
     color: PALETTE[currentColor].grille,
@@ -704,11 +704,12 @@ function buildHeadphones(){
 
   /* ---- shared cup geometry ---- */
   const shellGeo = superellipsoid(D.halfD, D.halfH, D.halfT, 2.72, 2.34, 140, 64, 9);
-  const baffleGeo = superellipsoid(0.42, 0.52, 0.05, 2.2, 2.34, 64, 26);
-  const padGeo = cushionRing(0.615, 0.425, 0.185, 0.165, 150, 34);
+  const baffleGeo = superellipsoid(0.30, 0.395, 0.05, 2.2, 2.34, 56, 22);
+  const padGeo = cushionRing(0.545, 0.395, 0.235, 0.185, 160, 40);
 
   // Digital Crown — knurled wheel whose axis runs front-to-back (local X)
-  const crownGeo = new THREE.CylinderGeometry(0.075, 0.075, 0.135, 44, 1);
+  const ventGeo = superellipsoid(0.105, 0.042, 0.028, 2.4, 3.0, 40, 14);
+  const crownGeo = new THREE.CylinderGeometry(0.086, 0.086, 0.15, 44, 1);
   crownGeo.rotateZ(Math.PI / 2);
   const crownCapGeo = new THREE.CylinderGeometry(0.030, 0.030, 0.148, 22, 1);
   crownCapGeo.rotateZ(Math.PI / 2);
@@ -732,15 +733,21 @@ function buildHeadphones(){
     cup.add(shell);
     if (side === 1) diagShell = shell;
 
+    // shallow vent / mic port on the outer face
+    const vent = new THREE.Mesh(ventGeo, mats.grille);
+    vent.position.set(0.0, -0.40, 0.247);
+    cup.add(vent);
+    if (side === 1) diagShell = shell;
+
     // dark baffle plate deep inside the cup, seen through the cushion opening
     const baffle = new THREE.Mesh(baffleGeo, mats.grille);
-    baffle.position.set(0, -0.95, -0.225);
+    baffle.position.set(0, -0.95, -0.16);
     baffle.castShadow = true;
     cup.add(baffle);
 
     // memory-foam ear cushion — centred on the cup axis and recessed into the rim
     const pad = new THREE.Mesh(padGeo, mats.cushion);
-    pad.position.set(0, -0.95, -0.265);
+    pad.position.set(0, -0.95, -0.245);
     pad.castShadow = true;
     if (side === 1) diagPad = pad;
     cup.add(pad);
