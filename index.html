@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>AirPods Max 2 — Тишина, которую слышно</title>
+<meta name="description" content="AirPods Max 2: студийный звук, адаптивное шумоподавление, 20 часов автономности. Интерактивная 3D-модель." />
+<meta name="theme-color" content="#07080a" />
+<meta property="og:title" content="AirPods Max 2 — Тишина, которую слышно" />
+<meta property="og:description" content="Интерактивный 3D-лендинг: алюминий, память формы и чип H2 в каждой чашке." />
+<meta property="og:type" content="website" />
+<link rel="preconnect" href="https://unpkg.com" />
+<link rel="preconnect" href="https://cdn.jsdelivr.net" />
+<style>
+  :root{
+    --bg:#07080a;
+    --ink:#f2f2f4;
+    --ink-dim:#9aa0a8;
+    --ink-faint:#5d636b;
+    --hair:rgba(255,255,255,.10);
+    --accent:#f08a4b;
+    --pad:clamp(20px,4vw,72px);
+    --ease:cubic-bezier(.22,1,.36,1);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+    overflow-x:hidden;
+  }
+  body::before{
+    content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+    background:
+      radial-gradient(118% 74% at 50% 16%, rgba(255,255,255,.085) 0%, rgba(255,255,255,.02) 40%, rgba(255,255,255,0) 64%),
+      radial-gradient(92% 58% at 50% 106%, rgba(255,255,255,.06) 0%, rgba(255,255,255,0) 62%),
+      linear-gradient(180deg,#0b0d10 0%, #07080a 46%, #06070a 72%, #0a0c0f 100%);
+  }
+  body::after{
+    content:"";position:fixed;inset:0;z-index:5;pointer-events:none;
+    background:radial-gradient(124% 102% at 50% 50%, rgba(0,0,0,0) 54%, rgba(0,0,0,.55) 100%);
+  }
+
+  /* ---------- 3D stage ---------- */
+  #stage{position:fixed;inset:0;z-index:1;pointer-events:none;transition:opacity .7s var(--ease)}
+  #stage canvas{display:block;width:100%;height:100%;outline:none}
+  body.no-3d #stage{display:none}
+  #poster{
+    position:fixed;inset:0;z-index:1;display:none;pointer-events:none;
+    background:
+      radial-gradient(42% 34% at 50% 48%, rgba(126,134,145,.40) 0%, rgba(126,134,145,.10) 55%, rgba(0,0,0,0) 74%),
+      radial-gradient(60% 46% at 50% 54%, rgba(240,138,75,.10) 0%, rgba(0,0,0,0) 70%);
+    filter:blur(2px);
+  }
+  body.no-3d #poster{display:block}
+
+  /* ---------- loader ---------- */
+  #boot{position:fixed;inset:0;z-index:60;display:grid;place-items:center;background:var(--bg);transition:opacity .7s var(--ease),visibility .7s}
+  #boot.gone{opacity:0;visibility:hidden}
+  #boot .ring{width:34px;height:34px;border-radius:50%;border:1.5px solid rgba(255,255,255,.14);border-top-color:rgba(255,255,255,.75);animation:spin 900ms linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* ---------- nav ---------- */
+  header.nav{
+    position:fixed;top:0;left:0;right:0;z-index:40;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:calc(14px + env(safe-area-inset-top)) var(--pad) 14px;
+    font-size:13px;letter-spacing:.01em;
+    backdrop-filter:blur(18px) saturate(140%);
+    -webkit-backdrop-filter:blur(18px) saturate(140%);
+    background:linear-gradient(180deg,rgba(7,8,10,.72),rgba(7,8,10,0));
+    border-bottom:1px solid rgba(255,255,255,.05);
+  }
+  header.nav .brand{display:flex;align-items:baseline;gap:9px;font-weight:600;letter-spacing:-.01em}
+  header.nav .brand span.dot{width:5px;height:5px;border-radius:50%;background:var(--accent);display:inline-block;transform:translateY(-2px)}
+  header.nav nav{display:flex;gap:26px;color:var(--ink-dim)}
+  header.nav nav a{color:inherit;text-decoration:none;transition:color .25s}
+  header.nav nav a:hover{color:var(--ink)}
+  .buy-pill{
+    border:1px solid var(--hair);border-radius:999px;padding:8px 16px;color:var(--ink);
+    text-decoration:none;font-weight:500;font-size:12.5px;background:rgba(255,255,255,.04);
+    transition:background .25s var(--ease),border-color .25s;
+  }
+  .buy-pill:hover{background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.22)}
+  @media(max-width:860px){header.nav nav{display:none}}
+
+  /* ---------- scrolly ---------- */
+  #scrolly{position:relative;z-index:10}
+  .panel{
+    min-height:100svh;display:flex;align-items:center;
+    padding:calc(72px + env(safe-area-inset-top)) var(--pad) calc(64px + env(safe-area-inset-bottom));
+    pointer-events:none;
+  }
+  .panel .copy{max-width:min(468px,42vw);pointer-events:auto}
+  .panel--left .copy{margin-right:auto}
+  .panel--right .copy{margin-left:auto}
+
+  .eyebrow{
+    font-size:11.5px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--accent);font-weight:600;margin:0 0 18px;
+    display:flex;align-items:center;gap:10px;
+  }
+  .eyebrow::before{content:"";width:26px;height:1px;background:currentColor;opacity:.65}
+  h2{font-size:clamp(30px,3.6vw,54px);line-height:.98;letter-spacing:-.035em;font-weight:600;margin:0 0 20px}
+  p.lead{margin:0;color:var(--ink-dim);font-size:clamp(14.5px,1.15vw,17px);line-height:1.62;max-width:44ch}
+  .stat-row{display:flex;gap:34px;margin-top:30px;flex-wrap:wrap}
+  .stat b{display:block;font-size:clamp(22px,2.1vw,30px);letter-spacing:-.03em;font-weight:600;line-height:1}
+  .stat i{display:block;font-style:normal;color:var(--ink-faint);font-size:11.5px;margin-top:7px;letter-spacing:.04em;text-transform:uppercase}
+
+  /* ---------- hero ---------- */
+  .hero{position:relative;align-items:stretch;justify-content:flex-start;text-align:center;flex-direction:column;padding-top:calc(102px + env(safe-area-inset-top));padding-bottom:calc(30px + env(safe-area-inset-bottom))}
+  .hero::before{
+    content:"";position:absolute;inset:0;pointer-events:none;
+    background:linear-gradient(180deg,rgba(4,5,7,.88) 0%,rgba(4,5,7,.70) 22%,rgba(4,5,7,.34) 40%,rgba(4,5,7,.08) 52%,rgba(4,5,7,0) 62%);
+  }
+  .hero::after{
+    content:"";position:absolute;left:0;right:0;bottom:0;height:46%;z-index:0;pointer-events:none;
+    background:linear-gradient(0deg,rgba(4,5,7,.94) 0%,rgba(4,5,7,.62) 42%,rgba(4,5,7,0) 100%);
+  }
+  .hero-top{position:relative;z-index:1;pointer-events:auto;max-width:min(720px,92vw);margin:0 auto}
+  .hero-bottom{position:relative;z-index:1;pointer-events:auto;margin-top:auto;max-width:min(720px,92vw);margin-left:auto;margin-right:auto;padding-bottom:12px}
+  .hero .eyebrow{justify-content:center}
+  .hero .eyebrow::before{display:none}
+  .hero h1{
+    font-size:clamp(44px,7.2vw,98px);line-height:.87;letter-spacing:-.045em;font-weight:600;margin:0;
+    background:linear-gradient(180deg,#fff 14%,#a3a9b1 106%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .hero p.sub{margin:24px auto 0;max-width:46ch;color:var(--ink-dim);font-size:clamp(13.5px,1.1vw,16px);line-height:1.6}
+  .cta-row{display:flex;gap:12px;justify-content:center;margin-top:30px;flex-wrap:wrap}
+  .btn{
+    display:inline-flex;align-items:center;gap:9px;text-decoration:none;
+    border-radius:999px;padding:14px 26px;font-size:14px;font-weight:600;letter-spacing:-.005em;
+    transition:transform .35s var(--ease),background .3s,box-shadow .35s;
+  }
+  .btn--primary{background:#fff;color:#0a0b0d;box-shadow:0 14px 40px -14px rgba(255,255,255,.45)}
+  .btn--primary:hover{transform:translateY(-2px);box-shadow:0 20px 52px -16px rgba(255,255,255,.55)}
+  .btn--ghost{background:rgba(255,255,255,.055);color:var(--ink);border:1px solid var(--hair);backdrop-filter:blur(10px)}
+  .btn--ghost:hover{background:rgba(255,255,255,.10);transform:translateY(-2px)}
+  .scroll-hint{
+    position:absolute;left:50%;bottom:calc(22px + env(safe-area-inset-bottom));transform:translateX(-50%);
+    color:var(--ink-faint);font-size:10px;letter-spacing:.24em;text-transform:uppercase;
+    display:flex;flex-direction:column;align-items:center;gap:10px;
+  }
+  .scroll-hint .bar{width:1px;height:34px;background:linear-gradient(180deg,rgba(255,255,255,.45),rgba(255,255,255,0));animation:drop 2.4s var(--ease) infinite}
+  @keyframes drop{0%{transform:scaleY(.2);transform-origin:top;opacity:0}45%{transform:scaleY(1);opacity:1}100%{transform:scaleY(1);transform-origin:bottom;opacity:0}}
+
+  /* ---------- colors ---------- */
+  .panel--colors{align-items:flex-end;justify-content:center;text-align:center}
+  .panel--colors .copy{max-width:min(620px,92vw);margin:0 auto}
+  .swatches{display:flex;gap:14px;justify-content:center;margin-top:26px;pointer-events:auto}
+  .sw{width:44px;height:44px;border-radius:50%;cursor:pointer;position:relative;border:none;padding:0;background:transparent;transition:transform .35s var(--ease)}
+  .sw::after{
+    content:"";position:absolute;inset:0;border-radius:50%;
+    border:1px solid rgba(255,255,255,.22);
+    box-shadow:inset 0 -6px 14px rgba(0,0,0,.22),inset 0 6px 12px rgba(255,255,255,.28);
+    transition:box-shadow .3s,border-color .3s;
+  }
+  .sw i{position:absolute;inset:0;border-radius:50%;display:block}
+  .sw:hover{transform:translateY(-3px)}
+  .sw[aria-pressed="true"]::after{box-shadow:0 0 0 2px var(--bg),0 0 0 3.5px rgba(255,255,255,.85),inset 0 -6px 14px rgba(0,0,0,.22)}
+  .sw-label{margin-top:16px;font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-dim);min-height:18px}
+
+  /* ---------- specs ---------- */
+  .specs{
+    position:relative;z-index:10;background:rgba(7,8,10,.88);
+    backdrop-filter:blur(26px);-webkit-backdrop-filter:blur(26px);
+    border-top:1px solid rgba(255,255,255,.06);
+    padding:clamp(60px,9vh,120px) var(--pad);
+  }
+  .specs .inner{max-width:1180px;margin:0 auto}
+  .specs h2{font-size:clamp(26px,3vw,42px);margin-bottom:38px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(212px,1fr));gap:1px;background:rgba(255,255,255,.07);border-radius:18px;overflow:hidden}
+  .cell{background:#07080a;padding:24px 22px 26px}
+  .cell dt{color:var(--ink-faint);font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin:0 0 10px}
+  .cell dd{margin:0;font-size:15px;line-height:1.45;letter-spacing:-.01em;color:var(--ink)}
+  .cell dd small{display:block;color:var(--ink-dim);font-size:12.5px;margin-top:5px;letter-spacing:0}
+
+  /* ---------- final ---------- */
+  .final{
+    position:relative;z-index:10;min-height:100svh;display:grid;place-items:center;text-align:center;
+    padding:calc(80px + env(safe-area-inset-top)) var(--pad) calc(80px + env(safe-area-inset-bottom));
+    pointer-events:none;
+  }
+  .final .copy{pointer-events:auto;max-width:640px}
+  .final h2{font-size:clamp(34px,5.4vw,72px);letter-spacing:-.045em}
+  footer{
+    position:relative;z-index:10;background:#05060a;border-top:1px solid rgba(255,255,255,.06);
+    padding:34px var(--pad) 46px;color:var(--ink-faint);font-size:11.5px;line-height:1.7;
+  }
+  footer .inner{max-width:1180px;margin:0 auto;display:flex;gap:20px;justify-content:space-between;flex-wrap:wrap}
+
+  .reveal{opacity:0;transform:translateY(26px);filter:blur(6px)}
+  .reveal.in{opacity:1;transform:none;filter:none;transition:opacity .9s var(--ease),transform .9s var(--ease),filter .9s var(--ease)}
+
+  @media(max-width:900px){
+    .panel{align-items:flex-end;padding-bottom:33svh}
+    .panel .copy{max-width:100%;margin:0 auto;text-align:left}
+    .panel--right .copy{margin:0 auto}
+    .panel--colors{align-items:center;padding-bottom:calc(36px + env(safe-area-inset-bottom))}
+    .panel--colors .copy{text-align:center}
+    .hero{padding-top:calc(96px + env(safe-area-inset-top))}
+    .stat-row{gap:22px}
+    .scroll-hint{display:none}
+    .hero{padding-bottom:calc(18px + env(safe-area-inset-bottom))}
+  }
+  @media(max-width:560px){
+    .cta-row{flex-direction:column;align-items:center;gap:10px;margin-top:22px}
+    .btn{width:100%;max-width:320px;justify-content:center;padding:13px 20px;font-size:13.5px}
+  }
+  @media(prefers-reduced-motion:reduce){
+    .scroll-hint .bar{animation:none}
+    .reveal{opacity:1;transform:none;filter:none}
+  }
+</style>
+</head>
+<body>
+<div id="boot"><div class="ring"></div></div>
+<div id="poster"></div>
+<div id="stage"><canvas id="gl"></canvas></div>
+
+<header class="nav">
+  <div class="brand">AirPods Max 2 <span class="dot"></span></div>
+  <nav>
+    <a href="#s1">Шумоподавление</a>
+    <a href="#s2">Звук</a>
+    <a href="#s3">Комфорт</a>
+    <a href="#colors">Цвета</a>
+    <a href="#specs">Характеристики</a>
+  </nav>
+  <a class="buy-pill" href="https://www.apple.com/airpods-max/" target="_blank" rel="noopener">Купить</a>
+</header>
+
+<main>
+  <div id="scrolly">
+    <section class="panel hero" id="hero">
+      <div class="hero-top">
+        <p class="eyebrow">Новое поколение · чип Apple H2</p>
+        <h1>Тишина,<br>которую<br>слышно.</h1>
+      </div>
+      <div class="hero-bottom">
+        <p class="sub">Алюминий, память формы и девять микрофонов. Шумодав, сквозной звук и студийная детальность — в каждой ноте.</p>
+        <div class="cta-row">
+          <a class="btn btn--primary" href="https://www.apple.com/airpods-max/" target="_blank" rel="noopener">Купить · 59 990 ₽</a>
+          <a class="btn btn--ghost" href="#s1">Крутите вниз — модель вращается</a>
+        </div>
+      </div>
+      <div class="scroll-hint"><span>Scroll</span><span class="bar"></span></div>
+    </section>
+
+    <section class="panel panel--right" id="s1">
+      <div class="copy reveal">
+        <p class="eyebrow">01 — Шумоподавление</p>
+        <h2>Мир на паузе.</h2>
+        <p class="lead">Восемь микрофонов в двух чашках замеряют давление вокруг амбушюр и гасят его — сорок восемь тысяч раз в секунду. Адаптивный аудиорежим сам решает, сколько тишины вам нужно прямо сейчас.</p>
+        <div class="stat-row">
+          <div class="stat"><b>8</b><i>микрофонов ANC</i></div>
+          <div class="stat"><b>48 000 /с</b><i>коррекций шума</i></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel panel--left" id="s2">
+      <div class="copy reveal">
+        <p class="eyebrow">02 — Звук</p>
+        <h2>Как<br>в студии.</h2>
+        <p class="lead">Apple H2 в каждой чашке, кастомный усилитель с высоким динамическим диапазоном и lossless-аудио по USB-C. Пространственное аудио отслеживает поворот головы — сцена не рассыпается, даже если вы повернулись.</p>
+        <div class="stat-row">
+          <div class="stat"><b>H2</b><i>в каждой чашке</i></div>
+          <div class="stat"><b>USB-C</b><i>lossless по проводу</i></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel panel--right" id="s3">
+      <div class="copy reveal">
+        <p class="eyebrow">03 — Комфорт</p>
+        <h2>386 грамм<br>баланса.</h2>
+        <p class="lead">Сетчатая дужка из плетёного полотна распределяет вес по всей поверхности головы. Амбушюры с памятью формы облегают контур уха и не давят за очками — даже на восьмом часу.</p>
+        <div class="stat-row">
+          <div class="stat"><b>386 г</b><i>с амбушюрами</i></div>
+          <div class="stat"><b>168×187</b><i>мм габарит</i></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel panel--left" id="s4">
+      <div class="copy reveal">
+        <p class="eyebrow">04 — Автономность</p>
+        <h2>20 часов<br>тишины.</h2>
+        <p class="lead">Полная зарядка — и целый перелёт с активным шумоподавлением. Пять минут в чехле дают около полутора часов музыки. Smart Case переводит наушники в сверхнизкое энергопотребление.</p>
+        <div class="stat-row">
+          <div class="stat"><b>20 ч</b><i>с включённым ANC</i></div>
+          <div class="stat"><b>5 мин</b><i>→ 1,5 часа</i></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel panel--colors" id="colors">
+      <div class="copy reveal">
+        <p class="eyebrow" style="justify-content:center">05 — Цвета</p>
+        <h2>Четыре оттенка<br>алюминия.</h2>
+        <p class="lead" style="margin:0 auto">Одно и то же анодированное покрытие под одним и тем же студийным светом выглядит по-разному. Переключите — материал меняется в реальном времени.</p>
+        <div class="swatches" id="swatches"></div>
+        <div class="sw-label" id="swLabel">Midnight</div>
+      </div>
+    </section>
+  </div>
+
+  <section class="specs" id="specs">
+    <div class="inner">
+      <p class="eyebrow">Технические характеристики</p>
+      <h2>Всё, что внутри.</h2>
+      <dl class="grid">
+        <div class="cell"><dt>Чип</dt><dd>Apple H2<small>отдельный в каждой чашке</small></dd></div>
+        <div class="cell"><dt>Драйвер</dt><dd>Динамический, разработка Apple<small>кастомный усилитель с высоким динамическим диапазоном</small></dd></div>
+        <div class="cell"><dt>Шумоподавление</dt><dd>Активное (ANC)<small>плюс адаптивный аудиорежим и режим прозрачности</small></dd></div>
+        <div class="cell"><dt>Микрофоны</dt><dd>9 всего<small>8 для ANC и 3 для голоса</small></dd></div>
+        <div class="cell"><dt>Автономность</dt><dd>До 20 часов<small>с включённым ANC на одном заряде</small></dd></div>
+        <div class="cell"><dt>Быстрая зарядка</dt><dd>5 минут → ~1,5 часа<small>зарядка через USB-C</small></dd></div>
+        <div class="cell"><dt>Подключение</dt><dd>Bluetooth 5.3<small>lossless-аудио по USB-C</small></dd></div>
+        <div class="cell"><dt>Вес</dt><dd>386 г<small>чехол Smart Case — 134,5 г</small></dd></div>
+        <div class="cell"><dt>Габариты</dt><dd>168,6 × 83,4 × 187,3 мм<small>с амбушюрами</small></dd></div>
+        <div class="cell"><dt>Управление</dt><dd>Digital Crown<small>плюс кнопка режимов прослушивания</small></dd></div>
+        <div class="cell"><dt>Датчики</dt><dd>Оптический, положения, обнаружения чехла<small>акселерометр и гироскоп в чашках</small></dd></div>
+        <div class="cell"><dt>В комплекте</dt><dd>Smart Case, кабель USB-C<small>документация</small></dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <section class="final">
+    <div class="copy reveal">
+      <p class="eyebrow" style="justify-content:center">AirPods Max 2</p>
+      <h2>Тишина начинается<br>здесь.</h2>
+      <p class="sub" style="margin:20px auto 0;color:var(--ink-dim);max-width:40ch;font-size:15px;line-height:1.6">Четыре цвета. Одна форма. Двадцать часов без шума.</p>
+      <div class="cta-row">
+        <a class="btn btn--primary" href="https://www.apple.com/airpods-max/" target="_blank" rel="noopener">Купить · 59 990 ₽</a>
+        <a class="btn btn--ghost" href="#hero">Наверх</a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="inner">
+      <div>Демо-лендинг. 3D-модель собрана процедурно на Three.js — без внешних .glb и текстур.</div>
+      <div>AirPods Max — товарный знак Apple Inc. Не является официальным сайтом Apple.</div>
+    </div>
+  </footer>
+</main>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.169.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.169.0/examples/jsm/"
+  }
+}
+</script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+<script type="module">
+import * as THREE from 'three';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+
+/* ============================================================
+   1. PALETTE  (sampled from the real AirPods Max 2 lineup)
+   ============================================================ */
+const PALETTE = {
+  midnight: {
+    label: 'Midnight', swatch: '#3e444b',
+    shell: 0x545b62, cushion: 0x2c3036, canopy: 0x424851, grille: 0x1e2024
+  },
+  starlight: {
+    label: 'Starlight', swatch: '#e3dcd2',
+    shell: 0xe6dfd5, cushion: 0xd0c8bd, canopy: 0xdad2c7, grille: 0x8f8880
+  },
+  orange: {
+    label: 'Orange', swatch: '#eaa385',
+    shell: 0xeba486, cushion: 0xe0895e, canopy: 0xdfab92, grille: 0x93583c
+  },
+  purple: {
+    label: 'Purple', swatch: '#cbc7df',
+    shell: 0xccc8e0, cushion: 0xb8b3d4, canopy: 0xc2beda, grille: 0x807b9f
+  }
+};
+let currentColor = 'midnight';
+
+/* ============================================================
+   2. procedural textures (no downloads)
+   ============================================================ */
+function makeKnitTexture(size = 512, subtle = false){
+  const c = document.createElement('canvas');
+  c.width = c.height = size;
+  const g = c.getContext('2d');
+  g.fillStyle = subtle ? '#d2d2d2' : '#6d6d6d'; g.fillRect(0, 0, size, size);
+  const cols = 22, rows = 22, cw = size / cols, ch = size / rows;
+  for (let y = 0; y < rows; y++){
+    for (let x = 0; x < cols; x++){
+      const off = (y % 2) ? cw * 0.5 : 0;
+      const cx = x * cw + cw * 0.5 + off;
+      const cy = y * ch + ch * 0.5;
+      const grd = g.createRadialGradient(cx, cy - ch * 0.12, 0, cx, cy, cw * 0.68);
+      grd.addColorStop(0, subtle ? '#ffffff' : '#e2e2e2');
+      grd.addColorStop(0.42, subtle ? '#c4c4c4' : '#8c8c8c');
+      grd.addColorStop(1, subtle ? '#bcbcbc' : '#3f3f3f');
+      g.fillStyle = grd;
+      g.beginPath();
+      g.ellipse(cx, cy, cw * 0.50, ch * 0.41, 0, 0, Math.PI * 2);
+      g.fill();
+    }
+  }
+  const t = new THREE.CanvasTexture(c);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.anisotropy = 8;
+  return t;
+}
+
+function makeRibTexture(size = 256){
+  const c = document.createElement('canvas');
+  c.width = c.height = size;
+  const g = c.getContext('2d');
+  g.fillStyle = '#808080'; g.fillRect(0, 0, size, size);
+  const n = 56;
+  for (let i = 0; i < n; i++){
+    g.fillStyle = i % 2 ? '#dcdcdc' : '#2e2e2e';
+    g.fillRect(i / n * size, 0, size / n, size);
+  }
+  const t = new THREE.CanvasTexture(c);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.anisotropy = 4;
+  return t;
+}
+
+/* ============================================================
+   3. geometry helpers
+   ============================================================ */
+const SGN = (v, e) => Math.sign(v) * Math.pow(Math.abs(v), e);
+
+/**
+ * Superellipsoid — a squared-off oval "pebble".
+ * Clean quad grid, so normals are perfect (no tessellation banding).
+ */
+function superellipsoid(a, b, c, n1, n2, segU = 120, segV = 56){
+  const geo = new THREE.BufferGeometry();
+  const pos = [], uv = [], idx = [];
+  const e1 = 2 / n1, e2 = 2 / n2;
+  const vPad = 0.014;
+  for (let i = 0; i <= segU; i++){
+    const u = i / segU * Math.PI * 2;
+    const cu = SGN(Math.cos(u), e2), su = SGN(Math.sin(u), e2);
+    for (let j = 0; j <= segV; j++){
+      const v = -Math.PI / 2 + vPad + (j / segV) * (Math.PI - 2 * vPad);
+      const kv = SGN(Math.cos(v), e1);
+      pos.push(a * kv * cu, b * kv * su, c * SGN(Math.sin(v), e1));
+      uv.push(i / segU, j / segV);
+    }
+  }
+  const stride = segV + 1;
+  for (let i = 0; i < segU; i++){
+    for (let j = 0; j < segV; j++){
+      const A = i * stride + j, B = (i + 1) * stride + j, C = A + 1, D = B + 1;
+      idx.push(A, B, C, B, D, C);
+    }
+  }
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  geo.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+  geo.setIndex(idx);
+  geo.computeVertexNormals();
+  return geo;
+}
+
+/** Swept oval tube — an ear-cushion ring. Axis of the ring is +X. */
+function cushionRing(Ry, Rz, tr, ta, segU = 150, segV = 34){
+  const geo = new THREE.BufferGeometry();
+  const pos = [], uv = [], idx = [];
+  for (let i = 0; i <= segU; i++){
+    const u = i / segU * Math.PI * 2;
+    const cu = Math.cos(u), su = Math.sin(u);
+    const py = Ry * su, pz = Rz * cu;
+    // outward normal of the ellipse path
+    let ry = su / Ry, rz = cu / Rz;
+    const rl = Math.hypot(ry, rz) || 1; ry /= rl; rz /= rl;
+    for (let j = 0; j <= segV; j++){
+      const v = j / segV * Math.PI * 2;
+      const rr = tr * Math.cos(v), aa = ta * Math.sin(v);
+      pos.push(aa, py + ry * rr, pz + rz * rr);
+      uv.push(i / segU, j / segV);
+    }
+  }
+  const stride = segV + 1;
+  for (let i = 0; i < segU; i++){
+    for (let j = 0; j < segV; j++){
+      const A = i * stride + j, B = (i + 1) * stride + j, C = A + 1, D = B + 1;
+      idx.push(A, C, B, B, C, D);
+    }
+  }
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  geo.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+  geo.setIndex(idx);
+  geo.computeVertexNormals();
+  return geo;
+}
+
+function makeNoiseTexture(size = 256){
+  const c = document.createElement('canvas');
+  c.width = c.height = size;
+  const g = c.getContext('2d');
+  const img = g.createImageData(size, size);
+  for (let i = 0; i < img.data.length; i += 4){
+    const v = 208 + (Math.random() - 0.5) * 74;
+    img.data[i] = img.data[i + 1] = img.data[i + 2] = v;
+    img.data[i + 3] = 255;
+  }
+  g.putImageData(img, 0, 0);
+  const t = new THREE.CanvasTexture(c);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  return t;
+}
+
+/** Knit canopy: a soft rounded band swept along an elliptical arch. */
+function buildCanopy(){
+  const ALONG = 200, AROUND = 30;
+  const phiM = 1.16, Rx = 1.36, Ry = 2.36, yc = -0.58;
+  const pos = [], uv = [], idx = [];
+  for (let i = 0; i <= ALONG; i++){
+    const t = i / ALONG;
+    const phi = -phiM + 2 * phiM * t;
+    const s = phi / phiM;
+    const cx = Rx * Math.sin(phi);
+    const cy = yc + Ry * Math.cos(phi);
+    let tx = Rx * Math.cos(phi), ty = -Ry * Math.sin(phi);
+    const tl = Math.hypot(tx, ty) || 1; tx /= tl; ty /= tl;
+    const nx = -ty, ny = tx;
+
+    let w = 0.345 + 0.155 * s * s;      // band width (front→back)
+    let h = 0.150 + 0.018 * s * s;      // band thickness
+    const sag = 0.070 + 0.034 * s * s;  // cradle curvature across the width
+
+    const a = Math.abs(s);
+    let tap = 1;
+    if (a > 0.93){ const q = (a - 0.93) / 0.07; tap = Math.sqrt(Math.max(0, 1 - q * q)); }
+    w *= tap; h *= (0.34 + 0.66 * tap);
+
+    for (let j = 0; j < AROUND; j++){
+      const v = j / AROUND * Math.PI * 2;
+      const cv = Math.cos(v), sv = Math.sin(v);
+      const e = 2 / 2.6;
+      const ac = SGN(cv, e) * w;
+      const ou = SGN(sv, e) * h * 0.5;
+      const k = ac / Math.max(w, 1e-4);
+      const crown = -sag * k * k;
+      pos.push(cx + nx * (ou + crown), cy + ny * (ou + crown), ac);
+      uv.push(t, j / AROUND);
+    }
+  }
+  for (let i = 0; i < ALONG; i++){
+    for (let j = 0; j < AROUND; j++){
+      const a0 = i * AROUND + j;
+      const b0 = i * AROUND + (j + 1) % AROUND;
+      const c0 = (i + 1) * AROUND + j;
+      const d0 = (i + 1) * AROUND + (j + 1) % AROUND;
+      idx.push(a0, c0, b0, b0, c0, d0);
+    }
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  geo.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+  geo.setIndex(idx);
+  geo.computeVertexNormals();
+  return geo;
+}
+
+/* ============================================================
+   4. product
+   ============================================================ */
+const D = {
+  cupX: 1.30,        // |x| of the ear-cup centre
+  cupY: -0.80,       // ear-cup centre height
+  pivotY: 0.15,      // where the stem meets the cup
+  halfH: 0.95,       // ear-cup half height
+  halfD: 0.72,       // ear-cup half depth (front-back)
+  halfT: 0.27        // ear-cup half thickness
+};
+
+function buildHeadphones(){
+  const root = new THREE.Group();
+  const mats = {};
+
+  const knit = makeKnitTexture();
+  const knitCanopy = knit.clone(); knitCanopy.needsUpdate = true; knitCanopy.repeat.set(34, 8);
+  const knitCanopyMap = makeKnitTexture(512, true); knitCanopyMap.repeat.set(34, 8);
+  const knitCushion = knit.clone(); knitCushion.needsUpdate = true; knitCushion.repeat.set(16, 6);
+  const knitCushionMap = makeKnitTexture(512, true); knitCushionMap.repeat.set(16, 6);
+  const rib = makeRibTexture();
+  const noiseMap = makeNoiseTexture(256);
+  noiseMap.repeat.set(7, 7);
+
+  /* ---- materials: anodised aluminium + knit ---- */
+  mats.shell = new THREE.MeshPhysicalMaterial({
+    color: PALETTE[currentColor].shell,
+    metalness: 0.90, roughness: 0.33, roughnessMap: noiseMap,
+    clearcoat: 0.35, clearcoatRoughness: 0.28,
+    envMapIntensity: 5.0
+  });
+  mats.chrome = new THREE.MeshPhysicalMaterial({
+    color: 0xe6e8ea, metalness: 1.0, roughness: 0.11,
+    clearcoat: 0.7, clearcoatRoughness: 0.08, envMapIntensity: 1.8
+  });
+  mats.canopy = new THREE.MeshPhysicalMaterial({
+    color: PALETTE[currentColor].canopy,
+    metalness: 0.0, roughness: 0.84,
+    sheen: 0.40, sheenRoughness: 0.55, sheenColor: new THREE.Color(0xcdd4dd),
+    map: knitCanopyMap, bumpMap: knitCanopy, bumpScale: 0.55, envMapIntensity: 1.15
+  });
+  mats.cushion = new THREE.MeshPhysicalMaterial({
+    color: PALETTE[currentColor].cushion,
+    metalness: 0.0, roughness: 0.94,
+    sheen: 0.28, sheenRoughness: 0.62, sheenColor: new THREE.Color(0xa8b0ba),
+    map: knitCushionMap, bumpMap: knitCushion, bumpScale: 0.50, envMapIntensity: 0.70
+  });
+  mats.grille = new THREE.MeshPhysicalMaterial({
+    color: PALETTE[currentColor].grille,
+    metalness: 0.15, roughness: 0.97,
+    bumpMap: knitCushion, bumpScale: 0.30, envMapIntensity: 0.35
+  });
+  mats.crown = new THREE.MeshPhysicalMaterial({
+    color: 0x3b3e43, metalness: 0.88, roughness: 0.32,
+    bumpMap: rib, bumpScale: 0.45, envMapIntensity: 1.1
+  });
+
+  /* ---- canopy ---- */
+  const canopy = new THREE.Mesh(buildCanopy(), mats.canopy);
+  canopy.castShadow = true; canopy.receiveShadow = true;
+  root.add(canopy);
+
+  /* ---- arm sleeves and chrome stems ---- */
+  const sleeveGeo = new THREE.CapsuleGeometry(0.079, 0.22, 8, 22);
+  const stemGeo = new THREE.CylinderGeometry(0.045, 0.045, 0.26, 22, 1);
+  const collarGeo = new THREE.CylinderGeometry(0.066, 0.078, 0.10, 26, 1);
+
+  for (const side of [-1, 1]){
+    const x = 1.27 * side;
+    const sleeve = new THREE.Mesh(sleeveGeo, mats.canopy);
+    sleeve.position.set(x, 0.42, 0);
+    sleeve.castShadow = true;
+    root.add(sleeve);
+
+    const stem = new THREE.Mesh(stemGeo, mats.chrome);
+    stem.position.set(x, 0.185, 0);
+    stem.castShadow = true;
+    root.add(stem);
+
+    const collar = new THREE.Mesh(collarGeo, mats.chrome);
+    collar.position.set(x, 0.075, 0);
+    collar.castShadow = true;
+    root.add(collar);
+  }
+
+  /* ---- shared cup geometry ---- */
+  const shellGeo = superellipsoid(D.halfD, D.halfH, D.halfT, 2.72, 2.34, 132, 60);
+  const baffleGeo = superellipsoid(D.halfD * 0.90, D.halfH * 0.90, 0.055, 2.2, 2.34, 96, 32);
+  const padGeo = cushionRing(0.595, 0.452, 0.196, 0.215, 150, 34);
+
+  const crownGeo = new THREE.CylinderGeometry(0.078, 0.078, 0.15, 44, 1);
+  crownGeo.rotateZ(Math.PI / 2);           // axis along +X (cup thickness)
+  crownGeo.rotateY(Math.PI / 2);           // -> axis along Z (front-back)
+  const crownCapGeo = new THREE.CylinderGeometry(0.032, 0.032, 0.16, 22, 1);
+  crownCapGeo.rotateX(Math.PI / 2);
+
+  for (const side of [-1, 1]){
+    const pivot = new THREE.Group();
+    pivot.position.set(D.cupX * side, D.pivotY, 0);
+    pivot.rotation.z = 0.085 * side * -1;
+    root.add(pivot);
+
+    const cup = new THREE.Group();
+    cup.rotation.y = Math.PI / 2 * side;
+    pivot.add(cup);
+
+    // aluminium shell
+    const shell = new THREE.Mesh(shellGeo, mats.shell);
+    shell.position.set(0, -0.95, 0);
+    shell.castShadow = true; shell.receiveShadow = true;
+    cup.add(shell);
+
+    // dark baffle plate behind the cushion
+    const baffle = new THREE.Mesh(baffleGeo, mats.grille);
+    baffle.position.set(0, -0.95, -0.255);
+    baffle.castShadow = true;
+    cup.add(baffle);
+
+    // memory-foam ear cushion
+    const pad = new THREE.Mesh(padGeo, mats.cushion);
+    pad.position.set(0, -0.95, -0.285);
+    pad.castShadow = true;
+    cup.add(pad);
+
+    // chrome socket where the stem enters the cup
+    const socket = new THREE.Mesh(new THREE.CylinderGeometry(0.062, 0.062, 0.12, 20), mats.chrome);
+    socket.position.set(0, 0.055, 0);
+    cup.add(socket);
+
+    if (side === 1){
+      // Digital Crown on the top edge
+      const crown = new THREE.Mesh(crownGeo, mats.crown);
+      crown.position.set(0.02, 0.10, 0.10);
+      crown.castShadow = true;
+      cup.add(crown);
+      const cap = new THREE.Mesh(crownCapGeo, mats.chrome);
+      cap.position.copy(crown.position);
+      cup.add(cap);
+
+      // listening-mode button
+      const btn = new THREE.Mesh(new RoundedBoxGeometry(0.10, 0.052, 0.245, 3, 0.024), mats.shell);
+      btn.position.set(0.0, 0.105, -0.30);
+      btn.castShadow = true;
+      cup.add(btn);
+    }
+  }
+
+  return { root, mats };
+}
+
+/* ============================================================
+   5. scene
+   ============================================================ */
+const canvas = document.getElementById('gl');
+const state = {
+  scrollTarget: 0,
+  pointerX: 0, pointerY: 0, px: 0, py: 0,
+  reduced: matchMedia('(prefers-reduced-motion: reduce)').matches,
+  mobile: matchMedia('(max-width: 900px)').matches
+};
+
+function hasWebGL(){
+  try {
+    const c = document.createElement('canvas');
+    return !!(window.WebGLRenderingContext && (c.getContext('webgl2') || c.getContext('webgl')));
+  } catch (e) { return false; }
+}
+
+let renderer, scene, camera, model, mats, clock;
+let running = false;
+
+function initScene(){
+  renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance' });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.setSize(window.innerWidth, window.innerHeight, false);
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.15;
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.VSMShadowMap;
+
+  scene = new THREE.Scene();
+
+  camera = new THREE.PerspectiveCamera(30, window.innerWidth / window.innerHeight, 0.1, 100);
+  camera.position.set(0, 1.25, 8.6);
+  camera.lookAt(0, -0.12, 0);
+
+  /* environment: RoomEnvironment + bright softboxes for studio highlights */
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  pmrem.compileEquirectangularShader();
+  const env = new RoomEnvironment();
+  const softbox = (w, h, i, p) => {
+    const m = new THREE.Mesh(
+      new THREE.PlaneGeometry(w, h),
+      new THREE.MeshBasicMaterial({ color: new THREE.Color(i, i, i * 0.97), side: THREE.DoubleSide })
+    );
+    m.position.set(p[0], p[1], p[2]);
+    m.lookAt(0, 0, 0);
+    env.add(m);
+  };
+  // bright wrap-around studio: the product is lit like a catalogue shot, the page stays dark
+  softbox(5.2, 3.0, 4.2, [0, 3.5, 0.6]);
+  softbox(3.0, 3.6, 3.8, [-3.3, 1.2, 1.2]);
+  softbox(2.6, 3.4, 3.2, [3.3, 1.2, 1.4]);
+  softbox(4.2, 1.8, 2.6, [0, 1.2, -3.4]);
+  softbox(5.0, 2.4, 1.7, [-2.6, 1.0, -3.0]);
+  softbox(5.0, 2.4, 1.7, [2.6, 1.0, -3.0]);
+  softbox(7.0, 2.2, 1.5, [0, -1.9, 2.6]);
+  scene.environment = pmrem.fromScene(env, 0.03).texture;
+  env.dispose();
+  pmrem.dispose();
+
+  /* three-point light rig */
+  const key = new THREE.DirectionalLight(0xfff3e6, 3.1);
+  key.position.set(3.6, 6.6, 5.2);
+  key.castShadow = true;
+  const sm = state.mobile ? 1024 : 2048;
+  key.shadow.mapSize.set(sm, sm);
+  key.shadow.radius = 6;
+  key.shadow.blurSamples = 16;
+  key.shadow.bias = -0.0009;
+  const sc = key.shadow.camera;
+  sc.left = -4.4; sc.right = 4.4; sc.top = 4.4; sc.bottom = -4.4; sc.near = 0.5; sc.far = 24;
+  sc.updateProjectionMatrix();
+  scene.add(key);
+  scene.add(key.target);
+
+  const fill = new THREE.DirectionalLight(0xc6d9ff, 1.15);
+  fill.position.set(-6.2, 1.6, 3.4);
+  scene.add(fill);
+
+  const rim = new THREE.DirectionalLight(0xffffff, 3.4);
+  rim.position.set(-1.4, 2.4, -6.4);
+  scene.add(rim);
+
+  scene.add(new THREE.HemisphereLight(0xe2ebf7, 0x090b0f, 0.55));
+
+  /* soft contact shadow catcher */
+  const floor = new THREE.Mesh(
+    new THREE.PlaneGeometry(30, 30),
+    new THREE.ShadowMaterial({ color: 0x000000, opacity: 0.42 })
+  );
+  floor.rotation.x = -Math.PI / 2;
+  floor.position.y = -2.05;
+  floor.receiveShadow = true;
+  scene.add(floor);
+
+  const built = buildHeadphones();
+  model = built.root;
+  mats = built.mats;
+  scene.add(model);
+
+  clock = new THREE.Clock();
+  resize();
+  running = true;
+  renderLoop();
+}
+
+function resize(){
+  if (!renderer) return;
+  const w = window.innerWidth, h = window.innerHeight;
+  const aspect = w / h;
+  camera.aspect = aspect;
+  const fitH = 4.95, fitW = 5.5;
+  const tanHalf = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+  const distH = fitH / (2 * tanHalf);
+  const distW = fitW / (2 * tanHalf * aspect);
+  camera.position.set(0, 1.25, Math.max(distH, distW));
+  camera.lookAt(0, -0.12, 0);
+  camera.updateProjectionMatrix();
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.setSize(w, h, false);
+  state.mobile = w <= 900;
+}
+
+/* scroll-driven turntable */
+const KEYS_DESKTOP = [
+  { p: 0.00, px: 0.00, py: -0.05, ry: 0.60, rx: -0.04, s: 0.86 },
+  { p: 0.20, px: -1.40, py: 0.04, ry: 1.46, rx: 0.04, s: 0.88 },
+  { p: 0.40, px: 1.40, py: 0.04, ry: 2.48, rx: 0.10, s: 0.88 },
+  { p: 0.60, px: -1.40, py: 0.04, ry: 3.68, rx: -0.10, s: 0.88 },
+  { p: 0.80, px: 1.40, py: 0.04, ry: 4.88, rx: 0.13, s: 0.88 },
+  { p: 1.00, px: 0.00, py: -0.10, ry: 6.88, rx: 0.02, s: 0.94 }
+];
+const KEYS_MOBILE = [
+  { p: 0.00, px: 0.00, py: -0.55, ry: 0.60, rx: -0.04, s: 0.78 },
+  { p: 0.20, px: 0.00, py: 0.95, ry: 1.48, rx: 0.04, s: 0.76 },
+  { p: 0.40, px: 0.00, py: 0.95, ry: 2.50, rx: 0.10, s: 0.76 },
+  { p: 0.60, px: 0.00, py: 0.95, ry: 3.70, rx: -0.08, s: 0.76 },
+  { p: 0.80, px: 0.00, py: 0.95, ry: 4.90, rx: 0.12, s: 0.76 },
+  { p: 1.00, px: 0.00, py: 0.92, ry: 6.88, rx: 0.02, s: 0.82 }
+];
+
+const smooth = t => t * t * (3 - 2 * t);
+
+function samplePose(p){
+  const keys = state.mobile ? KEYS_MOBILE : KEYS_DESKTOP;
+  p = Math.min(1, Math.max(0, p));
+  let i = 0;
+  while (i < keys.length - 2 && p > keys[i + 1].p) i++;
+  const a = keys[i], b = keys[i + 1];
+  const t = smooth((p - a.p) / Math.max(1e-6, b.p - a.p));
+  const m = (u, v) => u + (v - u) * t;
+  return {
+    px: m(a.px, b.px), py: m(a.py, b.py),
+    ry: m(a.ry, b.ry), rx: m(a.rx, b.rx), s: m(a.s, b.s)
+  };
+}
+
+let shown = 0;
+
+function renderLoop(){
+  if (!running) return;
+  requestAnimationFrame(renderLoop);
+  const dt = Math.min(clock.getDelta(), 0.05);
+  const time = clock.elapsedTime;
+
+  shown += (state.scrollTarget - shown) * Math.min(1, dt * 6.5);
+  state.px += (state.pointerX - state.px) * Math.min(1, dt * 4.0);
+  state.py += (state.pointerY - state.py) * Math.min(1, dt * 4.0);
+
+  const pose = samplePose(shown);
+
+  if (model){
+    const idle = state.reduced ? 0 : 1;
+    const wob = Math.sin(time * 0.62) * 0.020 * idle;
+    const bob = Math.cos(time * 0.47) * 0.026 * idle;
+    model.position.set(pose.px, pose.py + bob + state.py * 0.07, 0);
+    model.rotation.set(
+      pose.rx + state.py * 0.05 * idle + wob * 0.5,
+      pose.ry + state.px * 0.13 * idle + wob,
+      state.px * 0.045 * idle
+    );
+    model.scale.setScalar(pose.s);
+  }
+
+  renderer.render(scene, camera);
+}
+
+/* ============================================================
+   6. colours
+   ============================================================ */
+function shade(hex, amt){
+  const c = new THREE.Color(hex);
+  c.offsetHSL(0, 0, amt);
+  return '#' + c.getHexString();
+}
+
+function buildSwatches(){
+  const wrap = document.getElementById('swatches');
+  Object.entries(PALETTE).forEach(([key, cfg]) => {
+    const b = document.createElement('button');
+    b.className = 'sw';
+    b.type = 'button';
+    b.setAttribute('aria-label', cfg.label);
+    b.setAttribute('aria-pressed', key === currentColor ? 'true' : 'false');
+    const c = document.createElement('i');
+    c.style.background = `radial-gradient(120% 120% at 32% 24%, ${shade(cfg.swatch, .16)} 0%, ${cfg.swatch} 46%, ${shade(cfg.swatch, -.16)} 100%)`;
+    b.appendChild(c);
+    b.addEventListener('click', () => setColor(key));
+    wrap.appendChild(b);
+  });
+  document.getElementById('swLabel').textContent = PALETTE[currentColor].label;
+}
+
+function setColor(key){
+  currentColor = key;
+  const cfg = PALETTE[key];
+  document.querySelectorAll('.sw').forEach(el => {
+    el.setAttribute('aria-pressed', el.getAttribute('aria-label') === cfg.label ? 'true' : 'false');
+  });
+  document.getElementById('swLabel').textContent = cfg.label;
+
+  if (!mats) return;
+  const tween = (mat, hex, dur = 0.8) => {
+    const target = new THREE.Color(hex);
+    gsap.to(mat.color, { r: target.r, g: target.g, b: target.b, duration: dur, ease: 'power2.out' });
+  };
+  tween(mats.shell, cfg.shell);
+  tween(mats.cushion, cfg.cushion);
+  tween(mats.canopy, cfg.canopy);
+  tween(mats.grille, cfg.grille, 0.95);
+}
+
+/* ============================================================
+   7. boot
+   ============================================================ */
+function boot(){
+  const els = document.querySelectorAll('.reveal');
+  if ('IntersectionObserver' in window){
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+      });
+    }, { threshold: 0.22 });
+    els.forEach(el => io.observe(el));
+  } else {
+    els.forEach(el => el.classList.add('in'));
+  }
+
+  buildSwatches();
+
+  if (window.gsap && window.ScrollTrigger){
+    gsap.registerPlugin(ScrollTrigger);
+    ScrollTrigger.create({
+      trigger: '#scrolly',
+      start: 'top top',
+      end: 'bottom bottom',
+      onUpdate: self => { state.scrollTarget = self.progress; }
+    });
+    const stage = document.getElementById('stage');
+    ScrollTrigger.create({
+      trigger: '#specs',
+      start: 'top bottom',
+      end: 'top 32%',
+      onUpdate: self => { stage.style.opacity = String(1 - self.progress * 0.93); }
+    });
+    ScrollTrigger.create({
+      trigger: '.final',
+      start: 'top bottom',
+      end: 'center center',
+      onUpdate: self => {
+        if (self.progress > 0) stage.style.opacity = String(0.07 + self.progress * 0.34);
+      }
+    });
+  } else {
+    addEventListener('scroll', () => {
+      const el = document.getElementById('scrolly');
+      const r = el.getBoundingClientRect();
+      const total = el.offsetHeight - window.innerHeight;
+      state.scrollTarget = Math.min(1, Math.max(0, -r.top / Math.max(1, total)));
+    }, { passive: true });
+  }
+
+  if (!state.reduced){
+    addEventListener('pointermove', (e) => {
+      state.pointerX = (e.clientX / window.innerWidth - 0.5) * 2;
+      state.pointerY = (e.clientY / window.innerHeight - 0.5) * 2;
+    }, { passive: true });
+  }
+
+  addEventListener('resize', () => { if (renderer) resize(); }, { passive: true });
+
+  const start3D = () => {
+    if (!hasWebGL()){ document.body.classList.add('no-3d'); document.getElementById('boot').classList.add('gone'); return; }
+    try {
+      initScene();
+      setTimeout(() => document.getElementById('boot').classList.add('gone'), 260);
+    } catch (err){
+      console.warn('3D init failed', err);
+      document.body.classList.add('no-3d');
+      document.getElementById('boot').classList.add('gone');
+    }
+  };
+
+  if ('requestIdleCallback' in window) requestIdleCallback(start3D, { timeout: 900 });
+  else setTimeout(start3D, 60);
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) running = false;
+    else if (scene && !running){ running = true; clock.getDelta(); renderLoop(); }
+  });
+}
+
+if (document.readyState === 'loading') addEventListener('DOMContentLoaded', boot);
+else boot();
+</script>
+</body>
+</html>
