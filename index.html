@@ -373,7 +373,7 @@ import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.j
 const PALETTE = {
   midnight: {
     label: 'Midnight', swatch: '#3e444b',
-    shell: 0x545b62, cushion: 0x2c3036, canopy: 0x424851, grille: 0x1e2024
+    shell: 0x545b62, cushion: 0x3a4047, canopy: 0x32373e, grille: 0x1e2024
   },
   starlight: {
     label: 'Starlight', swatch: '#eee6d9',
@@ -397,7 +397,7 @@ function makeKnitTexture(size = 512, subtle = false){
   const c = document.createElement('canvas');
   c.width = c.height = size;
   const g = c.getContext('2d');
-  g.fillStyle = subtle ? '#d2d2d2' : '#6d6d6d'; g.fillRect(0, 0, size, size);
+  g.fillStyle = subtle ? '#b8b8b8' : '#6d6d6d'; g.fillRect(0, 0, size, size);
   const cols = 22, rows = 22, cw = size / cols, ch = size / rows;
   for (let y = 0; y < rows; y++){
     for (let x = 0; x < cols; x++){
@@ -406,8 +406,8 @@ function makeKnitTexture(size = 512, subtle = false){
       const cy = y * ch + ch * 0.5;
       const grd = g.createRadialGradient(cx, cy - ch * 0.12, 0, cx, cy, cw * 0.68);
       grd.addColorStop(0, subtle ? '#ffffff' : '#e2e2e2');
-      grd.addColorStop(0.42, subtle ? '#c4c4c4' : '#8c8c8c');
-      grd.addColorStop(1, subtle ? '#bcbcbc' : '#3f3f3f');
+      grd.addColorStop(0.42, subtle ? '#a8a8a8' : '#8c8c8c');
+      grd.addColorStop(1, subtle ? '#6e6e6e' : '#3f3f3f');
       g.fillStyle = grd;
       g.beginPath();
       g.ellipse(cx, cy, cw * 0.50, ch * 0.41, 0, 0, Math.PI * 2);
@@ -445,7 +445,7 @@ const SGN = (v, e) => Math.sign(v) * Math.pow(Math.abs(v), e);
  * Superellipsoid — a squared-off oval "pebble".
  * Clean quad grid, so normals are perfect (no tessellation banding).
  */
-function superellipsoid(a, b, c, n1, n2, segU = 120, segV = 56){
+function superellipsoid(a, b, c, n1, n2, segU = 120, segV = 56, flat = 0){
   const geo = new THREE.BufferGeometry();
   const pos = [], uv = [], idx = [];
   const e1 = 2 / n1, e2 = 2 / n2;
@@ -455,8 +455,13 @@ function superellipsoid(a, b, c, n1, n2, segU = 120, segV = 56){
     const cu = SGN(Math.cos(u), e2), su = SGN(Math.sin(u), e2);
     for (let j = 0; j <= segV; j++){
       const v = -Math.PI / 2 + vPad + (j / segV) * (Math.PI - 2 * vPad);
-      const kv = SGN(Math.cos(v), e1);
-      pos.push(a * kv * cu, b * kv * su, c * SGN(Math.sin(v), e1));
+      const zt = SGN(Math.sin(v), e1);
+      let kv = SGN(Math.cos(v), e1);
+      if (flat > 0 && zt < 0){
+        // flat inner plate with a crisp rounded rim (where the cushion mounts)
+        kv = Math.pow(Math.max(0, 1 - Math.pow(-zt, flat)), 1 / flat);
+      }
+      pos.push(a * kv * cu, b * kv * su, c * zt);
       uv.push(i / segU, j / segV);
     }
   }
@@ -474,6 +479,24 @@ function superellipsoid(a, b, c, n1, n2, segU = 120, segV = 56){
   return geo;
 }
 
+/** smooth sharing of normals across the duplicated seam columns of a swept surface */
+function weldRingSeam(geo, stride){
+  const n = geo.attributes.normal;
+  const total = n.count;
+  for (let j = 0; j < stride; j++){
+    const weld = (a, b) => {
+      if (b <= a) return;
+      const nx = n.getX(a) + n.getX(b), ny = n.getY(a) + n.getY(b), nz = n.getZ(a) + n.getZ(b);
+      const l = Math.hypot(nx, ny, nz) || 1;
+      n.setXYZ(a, nx / l, ny / l, nz / l);
+      n.setXYZ(b, nx / l, ny / l, nz / l);
+    };
+    const rings = Math.max(1, Math.round(total / stride));
+    for (let r = 0; r < rings; r++) weld(r * stride, r * stride + stride - 1);
+    for (let j = 0; j < stride; j++) weld(j, (rings - 1) * stride + j);
+  }
+  n.needsUpdate = true;
+}
 /** Swept oval tube — an ear-cushion ring. Axis of the ring is +X. */
 function cushionRing(Ry, Rz, tr, ta, segU = 150, segV = 34){
   const geo = new THREE.BufferGeometry();
@@ -503,6 +526,7 @@ function cushionRing(Ry, Rz, tr, ta, segU = 150, segV = 34){
   geo.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
   geo.setIndex(idx);
   geo.computeVertexNormals();
+  weldRingSeam(geo, stride);
   return geo;
 }
 
@@ -522,10 +546,10 @@ function makeNoiseTexture(size = 256){
   return t;
 }
 
-/** Knit canopy: a soft rounded band swept along an elliptical arch. */
+/** Flat knit canopy: a thin, wide band swept along an elliptical arch. */
 function buildCanopy(){
-  const ALONG = 200, AROUND = 30;
-  const phiM = 1.16, Rx = 1.36, Ry = 2.36, yc = -0.58;
+  const ALONG = 220, AROUND = 34;
+  const phiM = 1.05, Rx = 1.44, Ry = 2.57, yc = -0.65;
   const pos = [], uv = [], idx = [];
   for (let i = 0; i <= ALONG; i++){
     const t = i / ALONG;
@@ -537,19 +561,19 @@ function buildCanopy(){
     const tl = Math.hypot(tx, ty) || 1; tx /= tl; ty /= tl;
     const nx = -ty, ny = tx;
 
-    let w = 0.345 + 0.155 * s * s;      // band width (front→back)
-    let h = 0.150 + 0.018 * s * s;      // band thickness
-    const sag = 0.070 + 0.034 * s * s;  // cradle curvature across the width
+    let w = 0.405 - 0.085 * s * s;      // widest in the middle, narrowing to the arms
+    let h = 0.086 + 0.010 * s * s;      // thin shell, not a sausage
+    const sag = 0.105 + 0.045 * s * s;  // deep cradle curve across the width
 
     const a = Math.abs(s);
     let tap = 1;
-    if (a > 0.93){ const q = (a - 0.93) / 0.07; tap = Math.sqrt(Math.max(0, 1 - q * q)); }
-    w *= tap; h *= (0.34 + 0.66 * tap);
+    if (a > 0.80){ const q = (a - 0.80) / 0.20; tap = 1 - 0.58 * q * q; }
+    w *= tap; h *= (0.70 + 0.30 * tap);
 
     for (let j = 0; j < AROUND; j++){
       const v = j / AROUND * Math.PI * 2;
       const cv = Math.cos(v), sv = Math.sin(v);
-      const e = 2 / 2.6;
+      const e = 2 / 3.6;                // flat band cross-section
       const ac = SGN(cv, e) * w;
       const ou = SGN(sv, e) * h * 0.5;
       const k = ac / Math.max(w, 1e-4);
@@ -592,10 +616,12 @@ function buildHeadphones(){
   const mats = {};
 
   const knit = makeKnitTexture();
-  const knitCanopy = knit.clone(); knitCanopy.needsUpdate = true; knitCanopy.repeat.set(34, 8);
-  const knitCanopyMap = makeKnitTexture(512, true); knitCanopyMap.repeat.set(34, 8);
-  const knitCushion = knit.clone(); knitCushion.needsUpdate = true; knitCushion.repeat.set(16, 6);
-  const knitCushionMap = makeKnitTexture(512, true); knitCushionMap.repeat.set(16, 6);
+  const knitCanopy = knit.clone(); knitCanopy.needsUpdate = true; knitCanopy.repeat.set(4.2, 1.2);
+  const knitCanopyMap = makeKnitTexture(512, true); knitCanopyMap.repeat.set(4.2, 1.2);
+  knitCanopyMap.colorSpace = THREE.SRGBColorSpace;
+  const knitCushion = knit.clone(); knitCushion.needsUpdate = true; knitCushion.repeat.set(3.6, 1.3);
+  const knitCushionMap = makeKnitTexture(512, true); knitCushionMap.repeat.set(3.6, 1.3);
+  knitCushionMap.colorSpace = THREE.SRGBColorSpace;
   const rib = makeRibTexture();
   const noiseMap = makeNoiseTexture(256);
   noiseMap.repeat.set(7, 7);
@@ -614,14 +640,14 @@ function buildHeadphones(){
   mats.canopy = new THREE.MeshPhysicalMaterial({
     color: PALETTE[currentColor].canopy,
     metalness: 0.0, roughness: 0.84,
-    sheen: 0.40, sheenRoughness: 0.55, sheenColor: new THREE.Color(0xcdd4dd),
-    map: knitCanopyMap, bumpMap: knitCanopy, bumpScale: 0.55, envMapIntensity: 1.15
+    sheen: 0.16, sheenRoughness: 0.62, sheenColor: new THREE.Color(0x8e96a0),
+    map: knitCanopyMap, bumpMap: knitCanopy, bumpScale: 0.45, envMapIntensity: 0.72
   });
   mats.cushion = new THREE.MeshPhysicalMaterial({
     color: PALETTE[currentColor].cushion,
     metalness: 0.0, roughness: 0.94,
-    sheen: 0.28, sheenRoughness: 0.62, sheenColor: new THREE.Color(0xa8b0ba),
-    map: knitCushionMap, bumpMap: knitCushion, bumpScale: 0.50, envMapIntensity: 0.70
+    sheen: 0.15, sheenRoughness: 0.68, sheenColor: new THREE.Color(0x8e96a0),
+    map: knitCushionMap, bumpMap: knitCushion, bumpScale: 0.40, envMapIntensity: 0.60
   });
   mats.grille = new THREE.MeshPhysicalMaterial({
     color: PALETTE[currentColor].grille,
@@ -638,39 +664,56 @@ function buildHeadphones(){
   canopy.castShadow = true; canopy.receiveShadow = true;
   root.add(canopy);
 
-  /* ---- arm sleeves and chrome stems ---- */
-  const sleeveGeo = new THREE.CapsuleGeometry(0.079, 0.22, 8, 22);
-  const stemGeo = new THREE.CylinderGeometry(0.045, 0.045, 0.26, 22, 1);
-  const collarGeo = new THREE.CylinderGeometry(0.066, 0.078, 0.10, 26, 1);
+  /* ---- flat aluminium slide rails (yokes) ---- */
+  const railGeo = new RoundedBoxGeometry(0.052, 0.58, 0.14, 4, 0.024);
+  const knuckleGeo = new RoundedBoxGeometry(0.075, 0.12, 0.165, 4, 0.030);
+  const bezelGeo = new RoundedBoxGeometry(0.092, 0.10, 0.185, 4, 0.030);
+  const footGeo = new RoundedBoxGeometry(0.105, 0.055, 0.215, 4, 0.024);
+  const cuffGeo = new THREE.CapsuleGeometry(0.072, 0.05, 8, 20);
 
   for (const side of [-1, 1]){
-    const x = 1.27 * side;
-    const sleeve = new THREE.Mesh(sleeveGeo, mats.canopy);
-    sleeve.position.set(x, 0.42, 0);
-    sleeve.castShadow = true;
-    root.add(sleeve);
+    const x = 1.275 * side;
 
-    const stem = new THREE.Mesh(stemGeo, mats.chrome);
-    stem.position.set(x, 0.185, 0);
-    stem.castShadow = true;
-    root.add(stem);
+    const rail = new THREE.Mesh(railGeo, mats.chrome);
+    rail.position.set(x, 0.335, 0);
+    rail.castShadow = true;
+    root.add(rail);
 
-    const collar = new THREE.Mesh(collarGeo, mats.chrome);
-    collar.position.set(x, 0.075, 0);
-    collar.castShadow = true;
-    root.add(collar);
+    // knuckle where the canopy rolls onto the rail
+    const knuckle = new THREE.Mesh(knuckleGeo, mats.chrome);
+    knuckle.position.set(x, 0.585, 0);
+    knuckle.castShadow = true;
+    root.add(knuckle);
+
+    // chrome bezel + flared foot: the rail melts into the cup body
+    const bezel = new THREE.Mesh(bezelGeo, mats.chrome);
+    bezel.position.set(x, 0.145, 0);
+    bezel.castShadow = true;
+    root.add(bezel);
+
+    const foot = new THREE.Mesh(footGeo, mats.chrome);
+    foot.position.set(x, 0.085, 0);
+    foot.castShadow = true;
+    root.add(foot);
+
+    const cuff = new THREE.Mesh(cuffGeo, mats.canopy);
+    cuff.position.set(x, 0.625, 0);
+    cuff.castShadow = true;
+    root.add(cuff);
   }
 
   /* ---- shared cup geometry ---- */
-  const shellGeo = superellipsoid(D.halfD, D.halfH, D.halfT, 2.72, 2.34, 132, 60);
-  const baffleGeo = superellipsoid(D.halfD * 0.90, D.halfH * 0.90, 0.055, 2.2, 2.34, 96, 32);
-  const padGeo = cushionRing(0.595, 0.452, 0.196, 0.215, 150, 34);
+  const shellGeo = superellipsoid(D.halfD, D.halfH, D.halfT, 2.72, 2.34, 140, 64, 9);
+  const baffleGeo = superellipsoid(0.42, 0.52, 0.05, 2.2, 2.34, 64, 26);
+  const padGeo = cushionRing(0.615, 0.425, 0.185, 0.165, 150, 34);
 
-  const crownGeo = new THREE.CylinderGeometry(0.078, 0.078, 0.15, 44, 1);
-  crownGeo.rotateZ(Math.PI / 2);           // axis along +X (cup thickness)
-  crownGeo.rotateY(Math.PI / 2);           // -> axis along Z (front-back)
-  const crownCapGeo = new THREE.CylinderGeometry(0.032, 0.032, 0.16, 22, 1);
-  crownCapGeo.rotateX(Math.PI / 2);
+  // Digital Crown — knurled wheel whose axis runs front-to-back (local X)
+  const crownGeo = new THREE.CylinderGeometry(0.075, 0.075, 0.135, 44, 1);
+  crownGeo.rotateZ(Math.PI / 2);
+  const crownCapGeo = new THREE.CylinderGeometry(0.030, 0.030, 0.148, 22, 1);
+  crownCapGeo.rotateZ(Math.PI / 2);
+
+  let diagPad = null, diagShell = null;
 
   for (const side of [-1, 1]){
     const pivot = new THREE.Group();
@@ -687,28 +730,26 @@ function buildHeadphones(){
     shell.position.set(0, -0.95, 0);
     shell.castShadow = true; shell.receiveShadow = true;
     cup.add(shell);
+    if (side === 1) diagShell = shell;
 
-    // dark baffle plate behind the cushion
+    // dark baffle plate deep inside the cup, seen through the cushion opening
     const baffle = new THREE.Mesh(baffleGeo, mats.grille);
-    baffle.position.set(0, -0.95, -0.255);
+    baffle.position.set(0, -0.95, -0.225);
     baffle.castShadow = true;
     cup.add(baffle);
 
-    // memory-foam ear cushion
+    // memory-foam ear cushion — centred on the cup axis and recessed into the rim
     const pad = new THREE.Mesh(padGeo, mats.cushion);
-    pad.position.set(0, -0.95, -0.285);
+    pad.position.set(0, -0.95, -0.265);
     pad.castShadow = true;
+    if (side === 1) diagPad = pad;
     cup.add(pad);
 
-    // chrome socket where the stem enters the cup
-    const socket = new THREE.Mesh(new THREE.CylinderGeometry(0.062, 0.062, 0.12, 20), mats.chrome);
-    socket.position.set(0, 0.055, 0);
-    cup.add(socket);
 
     if (side === 1){
       // Digital Crown on the top edge
       const crown = new THREE.Mesh(crownGeo, mats.crown);
-      crown.position.set(0.02, 0.10, 0.10);
+      crown.position.set(0.0, -0.005, 0.115);
       crown.castShadow = true;
       cup.add(crown);
       const cap = new THREE.Mesh(crownCapGeo, mats.chrome);
@@ -716,11 +757,34 @@ function buildHeadphones(){
       cup.add(cap);
 
       // listening-mode button
-      const btn = new THREE.Mesh(new RoundedBoxGeometry(0.10, 0.052, 0.245, 3, 0.024), mats.shell);
-      btn.position.set(0.0, 0.105, -0.30);
+      const btn = new THREE.Mesh(new RoundedBoxGeometry(0.235, 0.048, 0.085, 3, 0.022), mats.shell);
+      btn.position.set(-0.02, -0.022, -0.175);
       btn.castShadow = true;
       cup.add(btn);
     }
+  }
+
+  // ---- geometry self-check: the cushion must sit centred and recessed ----
+  root.updateMatrixWorld(true);
+  if (diagPad && diagShell){
+    const pb = new THREE.Box3().setFromObject(diagPad);
+    const sb = new THREE.Box3().setFromObject(diagShell);
+    const pc = pb.getCenter(new THREE.Vector3()), sc = sb.getCenter(new THREE.Vector3());
+    const ps = pb.getSize(new THREE.Vector3()), ss = sb.getSize(new THREE.Vector3());
+    const r3 = v => +v.toFixed(3);
+    const info = {
+      shellCenter: sc.toArray().map(r3), padCenter: pc.toArray().map(r3),
+      shellSize: ss.toArray().map(r3), padSize: ps.toArray().map(r3),
+      offY: r3(pc.y - sc.y), offZ: r3(pc.z - sc.z),
+      padOuterVsShell: r3(ps.y / ss.y),
+      padRecessInboardOfShell: r3(sb.min.x - pb.min.x),
+      gapBetweenPadAndShellX: r3(pb.max.x - sb.min.x)
+    };
+    console.log('[AirPods Max 2] cushion diagnostics', info);
+    const d = document.createElement('div');
+    d.id = 'diag'; d.style.display = 'none';
+    d.textContent = JSON.stringify(info);
+    document.body.appendChild(d);
   }
 
   return { root, mats };
@@ -759,8 +823,8 @@ function initScene(){
   scene = new THREE.Scene();
 
   camera = new THREE.PerspectiveCamera(30, window.innerWidth / window.innerHeight, 0.1, 100);
-  camera.position.set(0, 1.25, 8.6);
-  camera.lookAt(0, -0.12, 0);
+  camera.position.set(0, 0.58, 8.6);
+  camera.lookAt(0, -0.30, 0);
 
   /* environment: RoomEnvironment + bright softboxes for studio highlights */
   const pmrem = new THREE.PMREMGenerator(renderer);
@@ -842,8 +906,8 @@ function resize(){
   const tanHalf = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
   const distH = fitH / (2 * tanHalf);
   const distW = fitW / (2 * tanHalf * aspect);
-  camera.position.set(0, 1.25, Math.max(distH, distW));
-  camera.lookAt(0, -0.12, 0);
+  camera.position.set(0, 0.58, Math.max(distH, distW));
+  camera.lookAt(0, -0.30, 0);
   camera.updateProjectionMatrix();
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
   renderer.setSize(w, h, false);
