@@ -227,16 +227,8 @@
   .foot-tg:hover{color:#fff;border-color:rgba(240,138,75,.65)}
   .foot-tg:hover span{transform:translate(2px,-2px)}
   .foot-note{margin:10px 0 0;color:var(--ink-faint);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase}
-  .foot-cols{display:grid;grid-template-columns:1.1fr 1.1fr 1.4fr;gap:28px;padding:clamp(28px,4vh,42px) 0}
+  .foot-cols{display:grid;grid-template-columns:1fr 1fr;gap:28px;padding:clamp(28px,4vh,42px) 0}
   .foot-col .foot-k{margin-bottom:11px}
-  .foot-link{
-    display:inline-flex;align-items:center;gap:7px;color:var(--ink);text-decoration:none;
-    font-size:14px;font-weight:500;letter-spacing:-.01em;padding-bottom:2px;
-    border-bottom:1px solid rgba(255,255,255,.18);transition:color .3s,border-color .3s;
-  }
-  .foot-link span{color:var(--accent);font-size:12px;transition:transform .35s var(--ease)}
-  .foot-link:hover{color:#fff;border-color:rgba(255,255,255,.45)}
-  .foot-link:hover span{transform:translate(2px,-2px)}
   .foot-desc{margin:9px 0 0;max-width:34ch;color:var(--ink-faint);font-size:11.5px;line-height:1.65}
   .foot-desc code{font:inherit;color:var(--ink-dim);background:rgba(255,255,255,.055);border-radius:4px;padding:1px 5px}
   .foot-bottom{
@@ -251,11 +243,9 @@
     .foot-top{flex-direction:column;gap:26px}
     .foot-contact{text-align:left}
     .foot-cols{grid-template-columns:1fr 1fr}
-    .foot-col:last-child{grid-column:1/-1}
   }
   @media(max-width:560px){
     .foot-cols{grid-template-columns:1fr}
-    .foot-col:last-child{grid-column:auto}
     .foot-bottom{flex-direction:column;align-items:flex-start;gap:8px}
     .foot-tg{font-size:20px}
   }
@@ -425,11 +415,6 @@
       </div>
 
       <div class="foot-cols">
-        <div class="foot-col">
-          <p class="foot-k">Проект</p>
-          <a class="foot-link" href="https://winteri9.github.io/aura-estate/" target="_blank" rel="noopener">Aura Estate <span aria-hidden="true">↗</span></a>
-          <p class="foot-desc">Агентство недвижимости · Москва. Премиум-лендинг с заявками в Telegram.</p>
-        </div>
         <div class="foot-col">
           <p class="foot-k">Демо</p>
           <p class="foot-desc">3D-модель <code>assets/model.glb</code> — glTF 2.0, 106k треугольников, Three.js.</p>
